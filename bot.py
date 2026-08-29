@@ -79,9 +79,9 @@ async def on_message(message):
             try:
                 full_prompt = f"{system_instruction}\n\nPertanyaan user: {user_text}"
                 response = gemini_client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=full_prompt,
-                )
+                            model="gemini-3.6-flash",
+                            contents=[system_instruction, image_part, final_prompt]
+                        )
                 await message.reply(response.text)
             except Exception as e:
                 print(f"Error teks: {e}")
