@@ -38,14 +38,13 @@ async def on_message(message):
             if attachment.content_type and attachment.content_type.startswith('image/'):
                 async with message.channel.typing():
                     try:
-                        # Download gambar sementara
                         response_img = requests.get(attachment.url)
                         image_data = response_img.content
                         
                         analysis_prompt = (
                             "Tolong analisis gambar ini sebagai seorang agen Bureau of Anomaly Control. "
-                            "Anggap gambar ini adalah sebuah 'anomali' atau permasalahan. "
-                            "Sebutkan apa masalah utamanya, dan berikan langkah-langkah solusi praktis untuk memperbaikinya dengan nada bicaramu yang ceria."
+                            "Anggap gambar ini adalah sebuah 'anomali' atau permasalahan jaringan. "
+                            "Sebutkan apa masalah utamanya, dan berikan langkah-langkah solusi praktis dengan nada bicaramu yang ceria."
                         )
                         
                         if user_text:
@@ -53,13 +52,14 @@ async def on_message(message):
                         else:
                             final_prompt = analysis_prompt
 
-                        # Format payload gambar untuk google-genai
-                        image_part = {
-                            "mime_type": attachment.content_type,
-                            "data": image_data
-                        }
+                        # Menggunakan tipe data inline_data yang aman untuk SDK google-genai
+                        from google.genai import types
+                        
+                        image_part = types.Part.from_bytes(
+                            data=image_data,
+                            mime_type=attachment.content_type,
+                        )
 
-                        # Kirim teks, instruksi sistem, dan gambar sekaligus ke gemini-2.5-flash (atau gemini-3.6-flash)
                         response = gemini_client.models.generate_content(
                             model="gemini-2.5-flash",
                             contents=[system_instruction, image_part, final_prompt]
@@ -67,7 +67,7 @@ async def on_message(message):
                         await message.reply(response.text)
                     except Exception as e:
                         print(f"Error analisis gambar: {e}")
-                        await message.reply("Duh, sinyal anomalisinya lagi kacau nih! Mint gagal scan gambarnya...")
+                        await message.reply(f"Duh, sinyal anomalisinya error nih! ({e})")
                 return
 
         # Jika hanya teks biasa
