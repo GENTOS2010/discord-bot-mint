@@ -52,16 +52,15 @@ async def on_message(message):
                         else:
                             final_prompt = analysis_prompt
 
-                        # Menggunakan tipe data inline_data yang aman untuk SDK google-genai
                         from google.genai import types
-                        
                         image_part = types.Part.from_bytes(
                             data=image_data,
                             mime_type=attachment.content_type,
                         )
 
+                        # Menggunakan model gemini-3.6-flash yang aktif
                         response = gemini_client.models.generate_content(
-                            model="gemini-2.5-flash",
+                            model="gemini-3.6-flash",
                             contents=[system_instruction, image_part, final_prompt]
                         )
                         await message.reply(response.text)
@@ -70,7 +69,7 @@ async def on_message(message):
                         await message.reply(f"Duh, sinyal anomalisinya error nih! ({e})")
                 return
 
-        # Jika hanya teks biasa
+        # Jika hanya teks biasa (tidak ada gambar)
         if not user_text:
              await message.reply("Yohoo! Ada anomaly apa nih? Mau nyemil Blizzi Es Krim bareng Mint?")
              return
@@ -79,9 +78,9 @@ async def on_message(message):
             try:
                 full_prompt = f"{system_instruction}\n\nPertanyaan user: {user_text}"
                 response = gemini_client.models.generate_content(
-                            model="gemini-3.6-flash",
-                            contents=[system_instruction, image_part, final_prompt]
-                        )
+                    model="gemini-3.6-flash",
+                    contents=full_prompt
+                )
                 await message.reply(response.text)
             except Exception as e:
                 print(f"Error teks: {e}")
